@@ -53,11 +53,11 @@ pipeline {
                 }
             }
         }
+stage('Unit Tests') {
+    steps {
+        sh "${VENV_BIN}/pytest tests --junitxml=test-report.xml --cov=liquify --cov-report=xml:coverage.xml --cov-report=term"
+    }
 
-        stage('Unit Tests') {
-            steps {
-                sh "${VENV_BIN}/pytest tests --junitxml=test-report.xml --cov=liquify --cov-report=xml:coverage.xml --cov-report=term"
-            }
             post {
                 always {
                     // Archive and display JUnit test results
