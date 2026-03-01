@@ -13,11 +13,11 @@ pipeline {
                 echo 'Creating Isolated Virtual Environment...'
                 sh "python3 -m venv ${VENV_PATH}"
                 
-                echo 'Installing Dependencies in Editable Mode...'
+                echo 'Installing Dependencies...'
                 sh "${VENV_BIN}/pip install --upgrade pip"
-                // Ensure trio is installed together
-                sh "${VENV_BIN}/pip install -e ../logflow"
-                sh "${VENV_BIN}/pip install -e ../confluid"
+                // Install trio dependencies from GitHub for CI portability
+                sh "${VENV_BIN}/pip install git+https://github.com/gearlux/logflow.git"
+                sh "${VENV_BIN}/pip install git+https://github.com/gearlux/confluid.git"
                 sh "${VENV_BIN}/pip install -e .[dev]"
             }
         }
