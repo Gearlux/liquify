@@ -12,3 +12,4 @@ coverage.xml
 test-report.xml
 flake8.txt
 flake8-report.xml
+logs/

@@ -1,7 +1,0 @@
-2026-03-01 18:42:14.586 | INFO     | logflow.core:configure_logging:159 | LogFlow initialized (Rank: N/A)
-2026-03-01 18:42:14.587 | DEBUG    | liquify.core:_bootstrap:67 | Configuration loaded from /private/var/folders/4x/x26tt86913gcwvfprsl3xtnw0000gp/T/pytest-of-gertbehi/pytest-55/test_bootstrap_logic_direct0/logic_config.yaml
-2026-03-01 18:42:14.599 | INFO     | logflow.core:configure_logging:159 | LogFlow initialized (Rank: N/A)
-2026-03-01 18:42:14.600 | DEBUG    | liquify.core:_bootstrap:67 | Configuration loaded from /private/var/folders/4x/x26tt86913gcwvfprsl3xtnw0000gp/T/pytest-of-gertbehi/pytest-55/test_bootstrap_with_scopes_dir0/scoped_direct.yaml
-2026-03-01 18:42:14.611 | INFO     | logflow.core:configure_logging:159 | LogFlow initialized (Rank: N/A)
-2026-03-01 18:42:14.637 | INFO     | logflow.core:configure_logging:159 | LogFlow initialized (Rank: N/A)
-2026-03-01 18:42:14.650 | INFO     | logflow.core:configure_logging:159 | LogFlow initialized (Rank: N/A)
