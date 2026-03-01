@@ -1,6 +1,8 @@
 from pathlib import Path
 from typing import Any, Callable, List, Optional
 
+import confluid
+import logflow
 import typer
 from rich.console import Console
 
@@ -32,10 +34,42 @@ class LiquifyApp:
         ),
         debug: bool = typer.Option(False, "--debug", "-d", help="Enable ultra-detailed debugging output."),
     ) -> None:
-        """Global callback to initialize the Liquify context."""
+        """Global callback to initialize the Liquify context and bootstrap trio."""
+        # 1. Initialize Context
         self.context = LiquifyContext(name=self.name, config_path=config, scopes=scope, debug=debug)
-        # Store context in Typer's internal context for access in commands
+
+        # 2. Bootstrap Trio (Logging & Config)
+        self._bootstrap()
+
+        # 3. Store in Typer's internal context
         ctx.obj = self.context
+
+    def _bootstrap(self) -> None:
+        """Initialize LogFlow and Confluid based on CLI options."""
+        if not self.context:
+            return
+
+        # A. Setup Logging (LogFlow)
+        log_level = "DEBUG" if self.context.debug else "INFO"
+        logflow.configure_logging(console_level=log_level)
+        self.context.logger = logflow.get_logger(self.name)
+
+        # B. Setup Configuration (Confluid)
+        if self.context.config_path:
+            if not self.context.config_path.exists():
+                console.print(f"[bold red]Error:[/bold red] Configuration file not found: {self.context.config_path}")
+                raise typer.Exit(code=1)
+
+            try:
+                # Load config with scopes
+                self.context.config_data = confluid.load(self.context.config_path, scopes=self.context.scopes)
+                if self.context.logger:
+                    self.context.logger.debug(f"Configuration loaded from {self.context.config_path}")
+            except Exception as e:
+                # Log to console since logger might not be fully ready or error is critical
+                console.print(f"[bold red]Error loading configuration:[/bold red] {e}")
+                # Re-raise as typer.Exit to ensure CLI stops
+                raise typer.Exit(code=1) from e
 
     def command(self, *args: Any, **kwargs: Any) -> Callable[[Any], Any]:
         """Decorator to register a command with the application."""

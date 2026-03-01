@@ -1,3 +1,5 @@
+from pathlib import Path
+
 import typer
 from typer.testing import CliRunner
 
@@ -18,9 +20,13 @@ def test_app_initialization() -> None:
     assert "Hello World" in result.stdout
 
 
-def test_global_context_extraction() -> None:
+def test_global_context_extraction(tmp_path: Path) -> None:
     app = LiquifyApp(name="test-app")
     captured_context = None
+
+    # Create dummy config
+    config_file = tmp_path / "test.yaml"
+    config_file.write_text("val: 1")
 
     @app.command()
     def check(ctx: typer.Context) -> None:
@@ -28,7 +34,7 @@ def test_global_context_extraction() -> None:
         captured_context = ctx.obj
 
     # Run with global flags
-    result = runner.invoke(app.typer_app, ["--config", "test.yaml", "--scope", "debug", "--debug", "check"])
+    result = runner.invoke(app.typer_app, ["--config", str(config_file), "--scope", "debug", "--debug", "check"])
 
     assert result.exit_code == 0
     assert captured_context is not None
