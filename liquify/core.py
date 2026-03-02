@@ -108,12 +108,16 @@ class LiquifyApp:
                 # Resolve and inject configured objects
                 for name, cls in injectables.items():
                     if name not in f_kwargs:
-                        # 1. Instantiate with defaults
-                        instance = cls()
+                        # Use the full config data as context for reference resolution
+                        full_config = self.context.config_data if self.context else {}
 
-                        # 2. Apply configuration from context if available
-                        if self.context and self.context.config_data:
-                            confluid.configure(instance, self.context.config_data, context=self.context.config_data)
+                        # Reconstruct the object. confluid.load will:
+                        # 1. Look for the class name in the config
+                        # 2. Use the full context to resolve @references
+                        instance = confluid.load(
+                            {cls.__name__: full_config.get(cls.__name__, {})},
+                            scopes=self.context.scopes if self.context else None,
+                        )
 
                         f_kwargs[name] = instance
 
