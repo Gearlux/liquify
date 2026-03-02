@@ -71,9 +71,61 @@ class LiquifyApp:
                 # Re-raise as typer.Exit to ensure CLI stops
                 raise typer.Exit(code=1) from e
 
-    def command(self, *args: Any, **kwargs: Any) -> Callable[[Any], Any]:
-        """Decorator to register a command with the application."""
-        return self.typer_app.command(*args, **kwargs)
+    def command(self, *args: Any, **kwargs: Any) -> Callable[[Callable[..., Any]], Callable[..., Any]]:
+        """
+        Decorator to register a command with automatic dependency injection.
+        Configurable objects in the signature are automatically loaded and flowed.
+        """
+
+        def decorator(f: Callable[..., Any]) -> Callable[..., Any]:
+            import functools
+            import inspect
+
+            import confluid
+
+            # 1. Inspect the function signature to find injectable parameters
+            sig = inspect.signature(f)
+            injectables = {}
+            new_params = []
+
+            for name, param in sig.parameters.items():
+                # Check if the type hint is a configurable class
+                annotation = param.annotation
+                if hasattr(annotation, "__confluid_configurable__"):
+                    injectables[name] = annotation
+                else:
+                    new_params.append(param)
+
+            # 2. Create a wrapper function with a signature excluding injectables
+            # This ensures Typer only sees the standard CLI arguments
+            @functools.wraps(f)
+            def wrapper(*f_args: Any, **f_kwargs: Any) -> Any:
+                # Retrieve context from Typer (set in _global_callback)
+                # Note: ctx is provided by Typer if requested, but we can also use self.context
+                if not self.context:
+                    return f(*f_args, **f_kwargs)
+
+                # Resolve and inject configured objects
+                for name, cls in injectables.items():
+                    if name not in f_kwargs:
+                        # 1. Instantiate with defaults
+                        instance = cls()
+
+                        # 2. Apply configuration from context if available
+                        if self.context and self.context.config_data:
+                            confluid.configure(instance, self.context.config_data, context=self.context.config_data)
+
+                        f_kwargs[name] = instance
+
+                return f(*f_args, **f_kwargs)
+
+            # 3. Update the wrapper's signature so Typer doesn't see injectables
+            wrapper.__signature__ = sig.replace(parameters=new_params)  # type: ignore
+
+            # Register the wrapper with Typer
+            return self.typer_app.command(*args, **kwargs)(wrapper)
+
+        return decorator
 
     def run(self) -> Any:
         """Execute the Typer application."""
