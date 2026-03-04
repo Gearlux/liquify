@@ -9,7 +9,14 @@ from liquify import LiquifyApp, LiquifyContext
 
 @confluid.configurable
 class Model:
-    def __init__(self, layers: int = 3, dropout: float = 0.1):
+    def __init__(self, layers: int = 3, dropout: float = 0.1) -> None:
+        """
+        A simple neural network model.
+
+        Args:
+            layers: Number of hidden layers in the network.
+            dropout: Dropout probability for regularization.
+        """
         self.layers = layers
         self.dropout = dropout
         self._secret = "hidden"
@@ -26,7 +33,14 @@ class Model:
 
 @confluid.configurable
 class Trainer:
-    def __init__(self, model: Model, epochs: int = 5):
+    def __init__(self, model: Model, epochs: int = 5) -> None:
+        """
+        Handles the training loop for a model.
+
+        Args:
+            model: The neural network model to train.
+            epochs: Total number of training passes over the dataset.
+        """
         self.model = model
         self.epochs = epochs
 

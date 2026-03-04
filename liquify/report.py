@@ -37,6 +37,7 @@ def show_configuration(
     table.add_column("Option (Shortest Unique)", style="bold white")
     table.add_column("Type", style="dim cyan")
     table.add_column("Current/Default Value", style="green")
+    table.add_column("Documentation", style="dim white")
 
     # Sort by short path
     sorted_paths = sorted(all_paths, key=lambda p: (display_map[p].count("."), display_map[p]))
@@ -53,8 +54,7 @@ def show_configuration(
         if len(val_str) > 50:
             val_str = val_str[:47] + "..."
 
-        table.add_row(f"--{short_path}", type_str, val_str)
-
+        table.add_row(f"--{short_path}", type_str, val_str, doc)
     console.print(table)
 
 
